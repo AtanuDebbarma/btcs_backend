@@ -1,4 +1,4 @@
-const { adminAuth } = require('../services/firebaseAdmin.js');
+const { adminAuth } = require('../services/firebaseAdmin');
 
 async function authenticateFirebaseToken(req, res, next) {
     const authHeader = req.headers.authorization;

@@ -7,7 +7,12 @@ const cloudinaryRoutes = require('./routes/cloudinaryRoutes');
 dotenv.config();
 
 const app = express();
-app.use(cors());
+const corsOptions = {
+    origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+    credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.get('/', (_, res) => res.send('Firebase Auth Backend Running!'));
