@@ -8,8 +8,20 @@ dotenv.config();
 
 const app = express();
 
+const allowedOrigins = [
+  process.env.FRONTEND_LOCAL,
+  process.env.FRONTEND_VERCEL,
+];
+
 const corsOptions = {
-  origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    console.log('CORS Origin Attempt:', origin);
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS Not Allowed'));
+    }
+  },
   credentials: true,
 };
 
