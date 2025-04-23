@@ -27,6 +27,9 @@ const addCarouselImage = (req, res) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           resource_type: 'image',
+          format: 'jpg',
+          folder: 'carousel-images',
+          transformation: [{quality: 'auto'}],
         },
         (error, result) => {
           if (error) {
@@ -37,7 +40,7 @@ const addCarouselImage = (req, res) => {
 
           return res.json({
             success: true,
-            message: 'Image new upload',
+            message: 'Image uploaded successfully',
             asset: {
               public_id: result.public_id,
               url: result.secure_url,

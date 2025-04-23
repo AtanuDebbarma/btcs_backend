@@ -1,4 +1,4 @@
-// .prettierrc.cjs
+// .prettierrc.js
 module.exports = {
   arrowParens: 'avoid',
   bracketSameLine: true,

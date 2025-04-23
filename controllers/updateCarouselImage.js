@@ -31,6 +31,9 @@ const replaceCarouselImage = (req, res) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           resource_type: 'image',
+          format: 'jpg',
+          folder: 'carousel-images',
+          transformation: [{quality: 'auto'}],
         },
         (error, result) => {
           if (error) {

@@ -35,7 +35,7 @@ module.exports = [
       'no-console': 'off',
       'import/no-unresolved': 'error',
       'node/no-missing-require': 'off', // useful in CommonJS
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-unused-vars': ['warn', {argsIgnorePattern: '^_'}],
     },
   },
 ];
