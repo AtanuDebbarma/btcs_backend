@@ -1,9 +1,9 @@
 // routes/cloudinary.js
 const express = require('express');
-const { authenticateFirebaseToken } = require('../middleware/auth');
-const { deleteCarouselImage } = require('../controllers/deleteImageController');
-const { replaceCarouselImage } = require('../controllers/updateCarouselImage');
-const { addCarouselImage } = require('../controllers/addCarouselImage');
+const {authenticateFirebaseToken} = require('../middleware/auth');
+const {deleteCarouselImage} = require('../controllers/deleteImageController');
+const {replaceCarouselImage} = require('../controllers/updateCarouselImage');
+const {addCarouselImage} = require('../controllers/addCarouselImage');
 
 const router = express.Router();
 
