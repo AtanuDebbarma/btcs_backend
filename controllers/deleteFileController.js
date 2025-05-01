@@ -5,12 +5,12 @@ const {logErrorToDatabase} = require('../helpers');
 /**
  * Deletes a Cloudinary asset by public_id.
  */
-const deleteImage = async (req, res) => {
+const deleteFile = async (req, res) => {
   const {public_id} = req.body;
 
   if (!public_id) {
     await logErrorToDatabase({
-      controllerName: 'deleteImage',
+      controllerName: 'deleteFile',
       errorContext: 'public_id is required',
     });
     return res
@@ -22,20 +22,20 @@ const deleteImage = async (req, res) => {
     const result = await cloudinary.uploader.destroy(public_id);
 
     if (result.result === 'ok') {
-      return res.json({success: true, message: 'Image deleted successfully'});
+      return res.json({success: true, message: 'file deleted successfully'});
     } else {
       await logErrorToDatabase({
-        controllerName: 'deleteImage',
-        errorContext: 'Failed to delete image',
+        controllerName: 'deleteFile',
+        errorContext: 'Failed to delete file',
       });
       return res
         .status(500)
-        .json({success: false, message: 'Failed to delete image', result});
+        .json({success: false, message: 'Failed to delete file', result});
     }
   } catch (error) {
     console.error('Cloudinary deletion error:', error);
     await logErrorToDatabase({
-      controllerName: 'deleteImage',
+      controllerName: 'deleteFile',
       errorContext: 'ServerError',
       errorDetails: error,
     });
@@ -45,4 +45,4 @@ const deleteImage = async (req, res) => {
   }
 };
 
-module.exports = {deleteImage};
+module.exports = {deleteFile};

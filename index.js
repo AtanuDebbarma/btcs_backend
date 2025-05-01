@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const protectedRoutes = require('./routes/protected');
 const cloudinaryRoutes = require('./routes/cloudinaryRoutes');
+const {logErrorToDatabase} = require('./helpers');
 
 dotenv.config();
 
@@ -19,6 +20,16 @@ const corsOptions = {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      // Log unauthorized attempts using serverAttempt flag
+      logErrorToDatabase({
+        controllerName: 'CORS',
+        errorContext: 'Unauthorized CORS Attempt',
+        errorDetails: {
+          message: `Blocked origin: ${origin}`,
+          name: 'CORS Violation',
+        },
+        serverAttempt: true, // This will log to the unauthorsizedAttempt path
+      });
       callback(new Error('CORS Not Allowed'));
     }
   },

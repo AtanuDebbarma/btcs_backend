@@ -59,9 +59,10 @@ const replacePDF = (req, res) => {
       // Upload the new PDF without specifying public_id (Cloudinary will assign one)
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          resource_type: 'raw', // Changed to raw
+          resource_type: 'image',
           format: 'pdf',
           folder: folderName,
+          transformation: [{quality: 90}],
         },
         (error, result) => {
           if (error) {

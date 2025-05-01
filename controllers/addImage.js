@@ -39,7 +39,7 @@ const addImage = (req, res) => {
           resource_type: 'image',
           format: 'jpg',
           folder: folderName,
-          transformation: [{quality: 'auto'}],
+          transformation: [{quality: 90}],
         },
         (error, result) => {
           if (error) {
