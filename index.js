@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const protectedRoutes = require('./routes/protected');
 const cloudinaryRoutes = require('./routes/cloudinaryRoutes');
 const {logErrorToDatabase} = require('./helpers');
+const {rateLimiter} = require('./middleware/rateLimiter');
 
 dotenv.config();
 
@@ -41,8 +42,8 @@ app.use(express.json());
 
 app.get('/', (_, res) => res.send('Firebase Auth Backend Running!'));
 
-app.use('/api/protected', protectedRoutes);
-app.use('/api/cloudinary', cloudinaryRoutes);
+app.use('/api/protected', rateLimiter, protectedRoutes);
+app.use('/api/cloudinary', rateLimiter, cloudinaryRoutes);
 
 // ✅ Export app for Vercel (serverless environment)
 module.exports = app;
