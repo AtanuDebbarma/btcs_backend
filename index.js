@@ -1,9 +1,10 @@
 const express = require('express');
 const cors = require('cors');
+
+const helmet = require('helmet');
 const dotenv = require('dotenv');
 const protectedRoutes = require('./routes/protected');
 const cloudinaryRoutes = require('./routes/cloudinaryRoutes');
-const {logErrorToDatabase} = require('./helpers');
 const {rateLimiter} = require('./middleware/rateLimiter');
 
 dotenv.config();
@@ -17,28 +18,19 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    console.log('CORS Origin Attempt:', origin);
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      // Log unauthorized attempts using serverAttempt flag
-      logErrorToDatabase({
-        controllerName: 'CORS',
-        errorContext: 'Unauthorized CORS Attempt',
-        errorDetails: {
-          message: `Blocked origin: ${origin}`,
-          name: 'CORS Violation',
-        },
-        serverAttempt: true, // This will log to the unauthorsizedAttempt path
-      });
+      console.error('[CORS] Unauthorized attempt from:', origin);
       callback(new Error('CORS Not Allowed'));
     }
   },
   credentials: true,
 };
 
+app.use(helmet());
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(express.json({limit: '10mb'})); // Prevent large payload attacks
 
 app.get('/', (_, res) => res.send('Firebase Auth Backend Running!'));
 

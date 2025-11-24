@@ -13,21 +13,22 @@
   "type": "commonjs",
   "description": "",
   "dependencies": {
-    "cloudinary": "^2.6.0",
+    "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.5.0",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
-    "express-rate-limit": "^7.5.0",
-    "firebase-admin": "^13.3.0",
-    "multer": "^1.4.5-lts.2",
+    "express-rate-limit": "^8.2.1",
+    "firebase-admin": "^13.6.0",
+    "helmet": "^8.1.0",
+    "multer": "^2.0.2",
     "streamifier": "^0.1.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.26.0",
-    "eslint": "^9.26.0",
-    "eslint-plugin-import": "^2.31.0",
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^5.3.1",
-    "prettier": "^3.5.3"
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2"
   }
 }

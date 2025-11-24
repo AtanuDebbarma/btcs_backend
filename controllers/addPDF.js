@@ -1,7 +1,6 @@
 const cloudinary = require('../services/cloudinary');
 const multer = require('multer');
 const streamifier = require('streamifier');
-const {logErrorToDatabase} = require('../helpers');
 
 // Use memory storage for in-memory uploads
 const storage = multer.memoryStorage();
@@ -10,11 +9,7 @@ const upload = multer({storage}).single('file');
 const addPDF = (req, res) => {
   upload(req, res, async function (err) {
     if (err) {
-      await logErrorToDatabase({
-        controllerName: 'addPDF',
-        errorContext: 'multer upload error',
-        errorDetails: err,
-      });
+      console.error('[addPDF] Multer upload error:', err);
       return res
         .status(500)
         .json({success: false, message: 'Upload failed', error: err});
@@ -23,10 +18,7 @@ const addPDF = (req, res) => {
     const fileBuffer = req.file?.buffer;
 
     if (!fileBuffer || !folderName) {
-      await logErrorToDatabase({
-        controllerName: 'addPDF',
-        errorContext: 'File and folder name is required',
-      });
+      console.error('[addPDF] Missing required fields');
       return res
         .status(400)
         .json({success: false, message: 'File and folder name is required'});
@@ -43,11 +35,7 @@ const addPDF = (req, res) => {
         },
         (error, result) => {
           if (error) {
-            logErrorToDatabase({
-              controllerName: 'addPDF',
-              errorContext: 'Upload error',
-              errorDetails: error,
-            });
+            console.error('[addPDF] Upload error:', error);
             return res
               .status(500)
               .json({success: false, message: 'Upload error', error});
@@ -67,12 +55,7 @@ const addPDF = (req, res) => {
       // Pipe the file buffer into the upload stream
       streamifier.createReadStream(fileBuffer).pipe(uploadStream);
     } catch (error) {
-      console.error('Server error:', error);
-      await logErrorToDatabase({
-        controllerName: 'addPDF',
-        errorContext: 'Server error',
-        errorDetails: error,
-      });
+      console.error('[addPDF] Server error:', error);
       return res
         .status(500)
         .json({success: false, message: 'Server error', error});
