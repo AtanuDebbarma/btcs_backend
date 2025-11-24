@@ -15,6 +15,7 @@ const allowedOrigins = [
   process.env.FRONTEND_LOCAL,
   process.env.FRONTEND_VERCEL,
   process.env.FRONTEND_DNS,
+  process.env.FRONTEND_ROOT,
 ];
 
 const corsOptions = {
