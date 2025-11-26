@@ -8,9 +8,16 @@
     "format": "prettier . --write"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "commonjs",
+    "author": {
+    "name": "Atanu Debbarma",
+    "url": "https://github.com/AtanuDebbarma"
+  },
+  "license": "PROPRIETARY",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AtanuDebbarma/btcstagartala"
+  },
   "description": "",
   "dependencies": {
     "cloudinary": "^2.8.0",
