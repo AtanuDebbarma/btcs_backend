@@ -28,24 +28,23 @@ const replacePDF = (req, res) => {
 
     try {
       // Try deleting old PDF with timeout
-      let deleted = null;
       try {
-        deleted = await Promise.race([
+        await Promise.race([
           cloudinary.uploader.destroy(public_id, {resource_type: 'image'}),
           new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Delete timeout')), 10000),
           ),
         ]);
-      } catch (err) {
+      } catch {
         // Try as raw if image fails
         try {
-          deleted = await Promise.race([
+          await Promise.race([
             cloudinary.uploader.destroy(public_id, {resource_type: 'raw'}),
             new Promise((_, reject) =>
               setTimeout(() => reject(new Error('Delete timeout')), 10000),
             ),
           ]);
-        } catch (rawErr) {
+        } catch {
           // Continue with upload even if delete fails
         }
       }
