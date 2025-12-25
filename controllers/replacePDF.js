@@ -1,6 +1,7 @@
-const cloudinary = require('../services/cloudinary');
 const multer = require('multer');
 const streamifier = require('streamifier');
+const cloudinary = require('../services/cloudinary');
+const {logger} = require('../utils/logger');
 
 // Use memory storage for in-memory uploads
 const storage = multer.memoryStorage();
@@ -9,7 +10,7 @@ const upload = multer({storage}).single('file');
 const replacePDF = (req, res) => {
   upload(req, res, async function (err) {
     if (err) {
-      console.error('[replacePDF] Multer error:', err);
+      logger.error('[replacePDF] Multer error:', err);
       return res
         .status(500)
         .json({success: false, message: 'PDF Upload failed', error: err});
@@ -19,7 +20,7 @@ const replacePDF = (req, res) => {
     const fileBuffer = req.file?.buffer;
 
     if (!public_id || !fileBuffer || !folderName) {
-      console.error('[replacePDF] Missing required fields');
+      logger.error('[replacePDF] Missing required fields');
       return res.status(400).json({
         success: false,
         message: 'public_id, foldername and file are required',
@@ -31,18 +32,18 @@ const replacePDF = (req, res) => {
       try {
         await Promise.race([
           cloudinary.uploader.destroy(public_id, {resource_type: 'image'}),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Delete timeout')), 10000),
-          ),
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Delete timeout')), 10000);
+          }),
         ]);
       } catch {
         // Try as raw if image fails
         try {
           await Promise.race([
             cloudinary.uploader.destroy(public_id, {resource_type: 'raw'}),
-            new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Delete timeout')), 10000),
-            ),
+            new Promise((_, reject) => {
+              setTimeout(() => reject(new Error('Delete timeout')), 10000);
+            }),
           ]);
         } catch {
           // Continue with upload even if delete fails
@@ -59,7 +60,7 @@ const replacePDF = (req, res) => {
         },
         (error, result) => {
           if (error) {
-            console.error('[replacePDF] Cloudinary upload error:', error);
+            logger.error('[replacePDF] Cloudinary upload error:', error);
             return res
               .status(500)
               .json({success: false, message: 'PDF EDIT error', error});
@@ -79,7 +80,7 @@ const replacePDF = (req, res) => {
       // Pipe the file buffer into the upload stream
       streamifier.createReadStream(fileBuffer).pipe(uploadStream);
     } catch (error) {
-      console.error('[replacePDF] Server error:', error);
+      logger.error('[replacePDF] Server error:', error);
       return res
         .status(500)
         .json({success: false, message: 'Server error', error});

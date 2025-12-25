@@ -1,10 +1,11 @@
 const admin = require('firebase-admin');
+const {logger} = require('../utils/logger');
 
 const updateDocument = async (req, res) => {
   const {collectionName, docId, documentData} = req.body;
 
   if (!collectionName || !docId || !documentData) {
-    console.error('[updateDocument] Missing required fields');
+    logger.error('[updateDocument] Missing required fields');
     return res.status(400).json({
       success: false,
       message: 'collectionName, docId, and documentData are required',
@@ -22,7 +23,7 @@ const updateDocument = async (req, res) => {
       .get();
 
     if (querySnapshot.empty) {
-      console.error('[updateDocument] No document found with id:', docId);
+      logger.error('[updateDocument] No document found with id:', docId);
       return res.status(404).json({
         success: false,
         message: 'No document found with this id',
@@ -43,7 +44,7 @@ const updateDocument = async (req, res) => {
       message: 'Document updated successfully',
     });
   } catch (error) {
-    console.error('[updateDocument] Server error:', error);
+    logger.error('[updateDocument] Server error:', error);
     return res
       .status(500)
       .json({success: false, message: 'Server error', error});

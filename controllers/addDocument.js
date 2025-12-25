@@ -1,10 +1,11 @@
 const admin = require('firebase-admin');
+const {logger} = require('../utils/logger');
 
 const addDocument = async (req, res) => {
   const {collectionName, documentData} = req.body;
 
   if (!collectionName || !documentData) {
-    console.error('[addDocument] Missing required fields');
+    logger.error('[addDocument] Missing required fields');
     return res.status(400).json({
       success: false,
       message: 'collectionName and documentData are required',
@@ -35,7 +36,7 @@ const addDocument = async (req, res) => {
       data: createdData,
     });
   } catch (error) {
-    console.error('[addDocument] Server error:', error);
+    logger.error('[addDocument] Server error:', error);
     return res
       .status(500)
       .json({success: false, message: 'Server error', error});

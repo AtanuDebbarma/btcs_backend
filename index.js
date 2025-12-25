@@ -1,11 +1,18 @@
 const express = require('express');
-const cors = require('cors');
-
 const helmet = require('helmet');
 const dotenv = require('dotenv');
 const protectedRoutes = require('./routes/protected');
 const cloudinaryRoutes = require('./routes/cloudinaryRoutes');
-const {rateLimiter} = require('./middleware/rateLimiter');
+const {
+  adminRateLimiter,
+  uploadRateLimiter,
+} = require('./middleware/rateLimiter');
+const {
+  geoLocationBlock,
+  validateRequestSize,
+  securityLogger,
+} = require('./middleware/security');
+const {logger} = require('./utils/logger');
 
 dotenv.config();
 
@@ -16,28 +23,92 @@ const allowedOrigins = [
   process.env.FRONTEND_VERCEL,
   process.env.FRONTEND_DNS,
   process.env.FRONTEND_ROOT,
-];
+].filter(Boolean); // Remove undefined values
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
+// Custom CORS middleware for better security
+const customCors = (req, res, next) => {
+  const origin = req.headers.origin;
+
+  // Allow requests without origin for health checks
+  if (!origin) {
+    if (req.url === '/' || req.url === '/health') {
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      next();
+      return;
     } else {
-      console.error('[CORS] Unauthorized attempt from:', origin);
-      callback(new Error('CORS Not Allowed'));
+      logger.error('[CORS] Rejecting request with no origin:', req.url);
+      res.status(403).json({error: 'CORS Not Allowed - No Origin'});
+      return;
     }
-  },
-  credentials: true,
+  }
+
+  // Check if origin is in allowed list
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+  } else {
+    logger.error('[CORS] Unauthorized attempt from:', origin);
+    res.status(403).json({error: 'CORS Not Allowed'});
+  }
 };
 
-app.use(helmet());
-app.use(cors(corsOptions));
-app.use(express.json({limit: '10mb'})); // Prevent large payload attacks
+// Configure Express to trust proxy
+app.set('trust proxy', 1);
 
-app.get('/', (_, res) => res.send('Firebase Auth Backend Running!'));
+// Security middleware
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Disable CSP for API-only backend
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  }),
+);
+app.use(customCors);
+app.use(securityLogger);
+app.use(geoLocationBlock);
 
-app.use('/api/protected', rateLimiter, protectedRoutes);
-app.use('/api/cloudinary', rateLimiter, cloudinaryRoutes);
+// Health check endpoints
+app.get('/', (_, res) => {
+  try {
+    res.send('BTCS Firebase Auth Backend Running!');
+  } catch (error) {
+    logger.error('Root endpoint error:', error);
+    res.status(500).json({error: 'Root endpoint failed'});
+  }
+});
+
+app.get('/health', (_, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+  });
+});
+
+// Apply route-specific security and rate limiting
+app.use(
+  '/api/protected',
+  validateRequestSize(500), // 500KB max for admin operations
+  express.json({limit: '500kb'}),
+  adminRateLimiter,
+  protectedRoutes,
+);
+
+app.use(
+  '/api/cloudinary',
+  validateRequestSize(5120), // 5MB max for file uploads
+  express.json({limit: '5mb'}),
+  uploadRateLimiter,
+  cloudinaryRoutes,
+);
 
 // ✅ Export app for Vercel (serverless environment)
 module.exports = app;
@@ -45,5 +116,5 @@ module.exports = app;
 // ✅ Local development: run server with `node index.js`
 if (require.main === module) {
   const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  app.listen(PORT, () => logger.log(`BTCS Backend running on port ${PORT}`));
 }

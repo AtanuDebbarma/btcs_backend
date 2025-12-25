@@ -1,4 +1,5 @@
 const {adminAuth} = require('../services/firebaseAdmin');
+const {logger} = require('../utils/logger');
 
 async function authenticateFirebaseToken(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -16,14 +17,15 @@ async function authenticateFirebaseToken(req, res, next) {
     const email = decodedToken.email;
 
     if (!adminEmails.includes(email)) {
-      console.error('[AUTH] Unauthorized admin attempt:', email);
+      logger.error('[AUTH] Unauthorized admin attempt:', email);
       return res.status(403).json({message: 'Access denied: not admin'});
     }
 
+    // eslint-disable-next-line require-atomic-updates
     req.user = decodedToken;
     next();
   } catch (error) {
-    console.error('[AUTH] Token verification failed:', error);
+    logger.error('[AUTH] Token verification failed:', error);
     res.status(403).json({message: 'Token verification failed', error});
   }
 }

@@ -1,6 +1,7 @@
-const cloudinary = require('../services/cloudinary');
 const multer = require('multer');
 const streamifier = require('streamifier');
+const cloudinary = require('../services/cloudinary');
+const {logger} = require('../utils/logger');
 
 // Use memory storage for in-memory uploads
 const storage = multer.memoryStorage();
@@ -9,7 +10,7 @@ const upload = multer({storage}).single('file');
 const replaceImage = (req, res) => {
   upload(req, res, async function (err) {
     if (err) {
-      console.error('[replaceImage] Multer upload error:', err);
+      logger.error('[replaceImage] Multer upload error:', err);
       return res
         .status(500)
         .json({success: false, message: 'Upload failed', error: err});
@@ -19,7 +20,7 @@ const replaceImage = (req, res) => {
     const fileBuffer = req.file?.buffer;
 
     if (!public_id || !fileBuffer || !folderName) {
-      console.error('[replaceImage] Missing required fields');
+      logger.error('[replaceImage] Missing required fields');
       return res.status(400).json({
         success: false,
         message: 'public_id, folder name and file are required',
@@ -31,7 +32,7 @@ const replaceImage = (req, res) => {
       const deleteImage = await cloudinary.uploader.destroy(public_id);
 
       if (deleteImage.result !== 'ok') {
-        console.error('[replaceImage] Failed to delete image');
+        logger.error('[replaceImage] Failed to delete image');
         return res
           .status(500)
           .json({success: false, message: 'Failed to delete image'});
@@ -47,7 +48,7 @@ const replaceImage = (req, res) => {
         },
         (error, result) => {
           if (error) {
-            console.error('[replaceImage] Upload error:', error);
+            logger.error('[replaceImage] Upload error:', error);
             return res
               .status(500)
               .json({success: false, message: 'Upload error', error});
@@ -67,7 +68,7 @@ const replaceImage = (req, res) => {
       // Pipe the file buffer into the upload stream
       streamifier.createReadStream(fileBuffer).pipe(uploadStream);
     } catch (error) {
-      console.error('[replaceImage] Server error:', error);
+      logger.error('[replaceImage] Server error:', error);
       return res
         .status(500)
         .json({success: false, message: 'Server error', error});

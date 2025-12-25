@@ -1,6 +1,7 @@
-const cloudinary = require('../services/cloudinary');
 const multer = require('multer');
 const streamifier = require('streamifier');
+const cloudinary = require('../services/cloudinary');
+const {logger} = require('../utils/logger');
 
 // Use memory storage for in-memory uploads
 const storage = multer.memoryStorage();
@@ -9,7 +10,7 @@ const upload = multer({storage}).single('file');
 const addPDF = (req, res) => {
   upload(req, res, async function (err) {
     if (err) {
-      console.error('[addPDF] Multer upload error:', err);
+      logger.error('[addPDF] Multer upload error:', err);
       return res
         .status(500)
         .json({success: false, message: 'Upload failed', error: err});
@@ -18,7 +19,7 @@ const addPDF = (req, res) => {
     const fileBuffer = req.file?.buffer;
 
     if (!fileBuffer || !folderName) {
-      console.error('[addPDF] Missing required fields');
+      logger.error('[addPDF] Missing required fields');
       return res
         .status(400)
         .json({success: false, message: 'File and folder name is required'});
@@ -35,7 +36,7 @@ const addPDF = (req, res) => {
         },
         (error, result) => {
           if (error) {
-            console.error('[addPDF] Upload error:', error);
+            logger.error('[addPDF] Upload error:', error);
             return res
               .status(500)
               .json({success: false, message: 'Upload error', error});
@@ -55,7 +56,7 @@ const addPDF = (req, res) => {
       // Pipe the file buffer into the upload stream
       streamifier.createReadStream(fileBuffer).pipe(uploadStream);
     } catch (error) {
-      console.error('[addPDF] Server error:', error);
+      logger.error('[addPDF] Server error:', error);
       return res
         .status(500)
         .json({success: false, message: 'Server error', error});
