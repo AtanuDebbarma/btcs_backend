@@ -24,8 +24,7 @@ This Node.js/Express backend serves as a secure middleware between the React fro
 
 ## Deployment
 
-- **Production**: Render
-- **Alternative**: Vercel (serverless configuration included - not used currently)
+- **Production**: Vercel (serverless configuration)
 
 ## Environment Variables
 

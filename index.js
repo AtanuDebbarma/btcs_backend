@@ -18,30 +18,31 @@ dotenv.config();
 
 const app = express();
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+// In production, exclude localhost to prevent bypass attempts
 const allowedOrigins = [
-  process.env.FRONTEND_LOCAL,
+  !isProduction ? process.env.FRONTEND_LOCAL : null, // Only allow localhost in development
   process.env.FRONTEND_VERCEL,
   process.env.FRONTEND_DNS,
   process.env.FRONTEND_ROOT,
-].filter(Boolean); // Remove undefined values
+].filter(Boolean); // Remove undefined/null values
+
+// Log allowed origins for security audit
+logger.info(
+  `[CORS] Environment: ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'}`,
+);
+logger.info(`[CORS] Allowed origins:`, allowedOrigins);
 
 // Custom CORS middleware for better security
 const customCors = (req, res, next) => {
   const origin = req.headers.origin;
 
-  // Allow requests without origin for health checks
+  // Reject all requests without origin (no exceptions)
   if (!origin) {
-    if (req.url === '/' || req.url === '/health') {
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-      next();
-      return;
-    } else {
-      logger.error('[CORS] Rejecting request with no origin:', req.url);
-      res.status(403).json({error: 'CORS Not Allowed - No Origin'});
-      return;
-    }
+    logger.error('[CORS] Rejecting request with no origin:', req.url);
+    res.status(403).json({error: 'CORS Not Allowed - No Origin'});
+    return;
   }
 
   // Check if origin is in allowed list
