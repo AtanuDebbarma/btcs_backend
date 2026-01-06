@@ -38,14 +38,37 @@ logger.info(`[CORS] Allowed origins:`, allowedOrigins);
 const customCors = (req, res, next) => {
   const origin = req.headers.origin;
 
-  // Reject all requests without origin (no exceptions)
+  // Handle OPTIONS preflight requests immediately
+  if (req.method === 'OPTIONS') {
+    if (!origin) {
+      logger.error('[CORS] Rejecting OPTIONS request with no origin:', req.url);
+      res.status(403).json({error: 'CORS Not Allowed - No Origin'});
+      return;
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      logger.info(`[CORS] Allowing OPTIONS preflight from:`, origin);
+      res.header('Access-Control-Allow-Origin', origin);
+      res.header('Access-Control-Allow-Credentials', 'true');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.status(200).end(); // End the preflight request here
+      return;
+    } else {
+      logger.error('[CORS] Unauthorized OPTIONS attempt from:', origin);
+      res.status(403).json({error: 'CORS Not Allowed'});
+      return;
+    }
+  }
+
+  // Reject all non-OPTIONS requests without origin
   if (!origin) {
     logger.error('[CORS] Rejecting request with no origin:', req.url);
     res.status(403).json({error: 'CORS Not Allowed - No Origin'});
     return;
   }
 
-  // Check if origin is in allowed list
+  // Check if origin is in allowed list for regular requests
   if (allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'true');
@@ -105,6 +128,12 @@ app.use(
 
 app.use(
   '/api/cloudinary',
+  (req, res, next) => {
+    logger.info(
+      `[CLOUDINARY] ${req.method} ${req.url} from origin: ${req.headers.origin}`,
+    );
+    next();
+  },
   validateRequestSize(5120), // 5MB max for file uploads
   express.json({limit: '5mb'}),
   uploadRateLimiter,
